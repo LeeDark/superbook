@@ -9,19 +9,45 @@ https://docs.djangoproject.com/en/dev/ref/settings/
 """
 
 # Build paths inside the project like this: BASE_DIR / "directory"
-from pathlib import Path
-BASE_DIR = Path(__file__).resolve().parent.parent
-TEMPLATE_DIRS = [str(BASE_DIR / 'templates'), ]
-STATICFILES_DIRS = [str(BASE_DIR / 'static'), ]
+import os
+
+# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+###from pathlib import Path
+###BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+###TEMPLATE_DIRS = [str(BASE_DIR / 'templates'), ]
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+            ],
+        },
+    },
+]
+
+###STATICFILES_DIRS = [str(BASE_DIR / 'static'), ]
 
 # Use 12factor inspired environment variables or from a file
 import environ
-env = environ.Env()
+root = environ.Path(BASE_DIR) - 1 # one folder back
+###env = environ.Env()
+env = environ.Env(DEBUG=(bool, False),)
+
 # Ideally move env file should be outside the git repo
 # i.e. BASE_DIR.parent.parent
-env_file = BASE_DIR.parent / 'local.env'
-if env_file.is_file():
-    environ.Env.read_env(str(env_file))
+###env_file = BASE_DIR.parent / 'local.env'
+env_file = os.path.abspath(BASE_DIR + "/../") + '/local.env'
+###if env_file.is_file():
+###    environ.Env.read_env(str(env_file))
+environ.Env.read_env(env_file)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/dev/howto/deployment/checklist/
@@ -33,7 +59,7 @@ SECRET_KEY = env('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-TEMPLATE_DEBUG = True
+###TEMPLATE_DEBUG = True
 
 ALLOWED_HOSTS = []
 
@@ -68,10 +94,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
-
-    'debug_toolbar.middleware.DebugToolbarMiddleware',
-)
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',)
 
 ROOT_URLCONF = 'superbook.urls'
 
@@ -117,3 +140,5 @@ MESSAGE_TAGS = {
 if DEBUG:
     INSTALLED_APPS += (
         'debug_toolbar.apps.DebugToolbarConfig',)
+    MIDDLEWARE_CLASSES += (
+        'debug_toolbar.middleware.DebugToolbarMiddleware',)
